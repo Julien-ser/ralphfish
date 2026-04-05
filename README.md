@@ -350,6 +350,110 @@ generator = ReportGenerator(template_dir=custom_template_dir)
 
 Template variables are available in the context; see `ReportGenerator._prepare_context()` for the full structure.
 
+## Persona Generator
+
+The `PersonaGenerator` creates random agent personas with configurable constraints. This is useful for simulations where you need diverse, systematically generated agents.
+
+### Basic Usage
+
+```python
+from ralphfish import PersonaGenerator, PersonaGeneratorConfig, PersonaConstraints, Archetype
+
+# Get default configuration with built-in pools
+config = PersonaGeneratorConfig.get_default()
+
+# Create a generator
+generator = PersonaGenerator(config)
+
+# Generate a single persona
+persona = generator.generate()
+print(persona.name, persona.background, persona.traits)
+
+# Generate multiple personas
+personas = generator.generate_batch(5)
+```
+
+### Applying Constraints
+
+Constrain the generation to specific archetypes, demographics, or bias patterns:
+
+```python
+# Only scientists and engineers
+constraints = PersonaConstraints(
+    archetypes=[Archetype.SCIENTIST, Archetype.ENGINEER],
+    min_age=30,
+    max_age=60,
+    genders=[Gender.MALE, Gender.FEMALE],
+    nationalities=["American", "British", "Canadian"]
+)
+
+personas = generator.generate_batch(
+    count=10,
+    constraints=constraints
+)
+```
+
+### Custom Configuration
+
+Provide your own value pools for complete control:
+
+```python
+from ralphfish import PersonaGeneratorConfig
+
+custom_config = PersonaGeneratorConfig(
+    first_names=["Alice", "Bob", "Charlie"],
+    last_names=["Smith", "Jones", "Wang"],
+    archetype_backgrounds={
+        "scientist": [
+            "particle physicist at CERN",
+            "marine biologist studying coral reefs",
+            "robotics researcher"
+        ],
+    },
+    archetype_traits={
+        "scientist": ["curious", "meticulous", "skeptical"],
+    },
+    bias_patterns=["confirmation bias", "availability heuristic"],
+    communication_styles=["formal", "technical", "diplomatic"]
+)
+
+generator = PersonaGenerator(custom_config)
+```
+
+### Available Constraints
+
+`PersonaConstraints` supports:
+
+- `archetypes`: Limit to specific roles from the `Archetype` enum
+- `min_age`, `max_age`: Age range (default: 18-80)
+- `genders`: Limit to specific genders from the `Gender` enum
+- `nationalities`: List of nationality strings
+- `bias_patterns`: Specific biases to include (overrides config defaults)
+- `traits`: Additional personality traits to mix in
+- `communication_styles`: Specific communication styles (overrides config)
+- `background_categories`: Custom background themes
+
+### Reproducibility
+
+Use the `seed` parameter for deterministic generation:
+
+```python
+persona1 = generator.generate(seed=42)
+persona2 = generator.generate(seed=42)  # Same persona
+```
+
+### Integration with Agents
+
+Generated personas work seamlessly with the `Agent` class:
+
+```python
+from ralphfish import Agent, create_agents, OpenRouterClient
+
+client = OpenRouterClient()
+personas = generator.generate_batch(3, constraints)
+agents = await create_agents(personas, client)
+```
+
 ## Development Status
 
 **Phase 1**: Planning & Setup - ✅ Complete
@@ -364,11 +468,11 @@ Template variables are available in the context; see `ReportGenerator._prepare_c
 - [x] Create Wiggum loop executor
 - [x] Develop inter-agent communication layer with message passing, context window management, and memory summarization
 
-**Phase 3**: Prediction & Output Generation - 🔄 In Progress
+**Phase 3**: Prediction & Output Generation - ✅ Complete
 - [x] Build prediction synthesizer (aggregation, consensus/dissent detection, confidence scoring)
 - [x] Implement structured report generator using Jinja2 templates (JSON, YAML, Markdown)
 - [x] Add export functionality with timestamped filesystem output and summary-only option
-- [ ] Create configurable persona generator
+- [x] Create configurable persona generator
 
 ## Project Context
 
