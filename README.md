@@ -11,8 +11,14 @@ pip install -e .
 # Set your OpenRouter API key
 export OPENROUTER_API_KEY="your-key-here"
 
-# Example: Parse a seed document (see examples/parse_seed.py)
-python examples/parse_seed.py
+# Run a simulation using the CLI
+ralphfish run-simulation -s examples/scenario.txt -a 3 -r 3
+
+# Generate personas
+ralphfish generate-personas -n 5 -o personas.json
+
+# Export a report from existing simulation data
+ralphfish export-report -s output/simulation_state.json -f markdown json
 ```
 
 ## Seed Parser
@@ -52,6 +58,122 @@ The core iteration pattern is fully documented in [WIGGUM_SPECIFICATION.md](WIGG
 - **Loop Executor**: Orchestrates rounds and state persistence
 - **Synthesizer**: Aggregates final outputs into prediction reports
 - **CLI**: Command interface for running simulations
+
+## CLI Usage
+
+Ralphfish provides a command-line interface for running simulations without writing code.
+
+### Installation as CLI Tool
+
+After installing the package, the `ralphfish` command is available:
+
+```bash
+ralphfish --help
+```
+
+### Commands
+
+#### `run-simulation`
+
+Run a complete multi-agent simulation with a scenario file.
+
+**Basic usage:**
+
+```bash
+ralphfish run-simulation -s scenario.txt -a 3 -r 3
+```
+
+**Options:**
+- `-s, --scenario PATH` (required): Path to scenario text file
+- `-a, --agents N`: Number of agents to create (default: 3)
+- `-r, --rounds N`: Number of rounds to simulate (default: 3)
+- `-m, --model MODEL`: OpenRouter model to use (default: openai/gpt-3.5-turbo)
+- `-p, --protocol {discussion,debate,voting}`: Interaction protocol (default: discussion)
+- `-c, --max-concurrent N`: Maximum concurrent LLM calls (default: 1)
+- `-o, --output PATH`: Output directory for results (default: ./output)
+- `--title TEXT`: Scenario title (default: derived from filename)
+- `--context TEXT`: Additional context for the scenario
+
+**Example with all options:**
+
+```bash
+ralphfish run-simulation \
+  -s scenarios/product_launch.txt \
+  -a 5 \
+  -r 4 \
+  -m anthropic/claude-instant-1.2 \
+  -p debate \
+  -c 2 \
+  -o ./results \
+  --title "Q4 Product Launch Strategy" \
+  --context "Focus on market risks and competitive advantages"
+```
+
+#### `generate-personas`
+
+Generate agent personas and save to a JSON file.
+
+**Basic usage:**
+
+```bash
+ralphfish generate-personas -n 10 -o personas.json
+```
+
+**Options:**
+- `-n, --count N` (required): Number of personas to generate
+- `-o, --output PATH` (required): Output JSON file path
+- `-a, --archetype {scientist,engineer,artist,entrepreneur,...}`: Restrict to specific archetype
+- `--min-age N`: Minimum age (default: 18)
+- `--max-age N`: Maximum age (default: 80)
+- `--seed N`: Random seed for reproducibility
+
+**Example:**
+
+```bash
+ralphfish generate-personas -n 5 -o my_agents.json -a scientist --min-age 30 --max-age 60 --seed 42
+```
+
+#### `export-report`
+
+Export simulation reports from saved state files.
+
+**Basic usage:**
+
+```bash
+ralphfish export-report -s output/simulation_state.json
+```
+
+**Options:**
+- `-s, --state PATH` (required): Simulation state JSON file
+- `-r, --report PATH`: Pre-synthesized report JSON file (optional, will synthesize if not provided)
+- `-o, --output-dir PATH`: Output directory for reports (default: ./reports)
+- `-f, --formats {markdown,json,yaml}...`: Output format(s) (default: markdown)
+- `--summary-only`: Generate summary report only (without full transcript)
+- `--prefix TEXT`: Filename prefix for exported reports
+
+**Example:**
+
+```bash
+ralphfish export-report \
+  -s output/simulation_state.json \
+  -f markdown json \
+  -o ./final_reports \
+  --prefix "final_analysis" \
+  --summary-only
+```
+
+### Workflow Example
+
+```bash
+# 1. Generate personas
+ralphfish generate-personas -n 5 -o agents.json
+
+# 2. Run simulation with custom scenario
+ralphfish run-simulation -s my_scenario.txt -a 5 -r 3 -o ./sim1
+
+# 3. Export reports in multiple formats
+ralphfish export-report -s ./sim1/simulation_state.json -f all -o ./reports
+```
 
 ## Agent Class
 
