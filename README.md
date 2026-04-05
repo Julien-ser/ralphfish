@@ -1,29 +1,41 @@
-# Project Template
+# Ralphfish - LLM Multi-Agent Simulation Engine
 
-This is a template for new projects created via `wiggum_master.sh create`.
+Ralphfish implements the Wiggum loop pattern for running multi-agent simulations with LLM-powered agents. Agents with distinct personas interact, debate, and make predictions through structured rounds.
 
-Each project:
-- Lives in `projects/<project-name>/`
-- Has its own GitHub repository
-- Runs its own autonomous OpenCode agent loop
-- Tracks progress in TASKS.md
+## Quickstart
 
-## Setup
+```bash
+# Install dependencies
+pip install -e .
 
-1. Create: `bash wiggum_master.sh create "my-project" "Description"`
-2. View: `cat projects/my-project/README.md`
-3. Initialize: `cd projects/my-project && opencode /init --yes`
-4. Run: `cd projects/my-project && bash wiggum.sh`
+# Run a simulation (after implementing)
+python -m ralphfish.run-simulation --scenario scenario.txt --agents 3 --rounds 5
+```
 
-## Files
+## Wiggum Loop Specification
 
-- **README.md** - Project documentation
-- **TASKS.md** - Development task list
-- **prompt.txt** - Agent instructions (project-specific)
-- **AGENTS.md** - Project context (auto-generated)
-- **src/** - Source code directory
-- **tests/** - Test files
+The core iteration pattern is fully documented in [WIGGUM_SPECIFICATION.md](WIGGUM_SPECIFICATION.md), including:
+- State machine transitions
+- Interaction protocols (discuss/debate/vote)
+- Pseudocode for the complete loop
+- Aggregation and synthesis rules
 
-## Customization
+## Architecture
 
-Update TASKS.md with your project goals, then let the agent handle it!
+- **Seed Parser**: Extracts entities and relationships from input text
+- **Agent Engine**: Manages personas, LLM calls, and message history
+- **Loop Executor**: Orchestrates rounds and state persistence
+- **Synthesizer**: Aggregates final outputs into prediction reports
+- **CLI**: Command interface for running simulations
+
+## Development Status
+
+**Phase 1**: Planning & Setup - In Progress
+- [x] Wiggum loop specification defined
+- [ ] Python project structure (`pyproject.toml`)
+- [ ] OpenRouter client wrapper
+- [ ] Base data models
+
+## Project Context
+
+Part of the Wiggum ecosystem: autonomous OpenCode agent loops for complex simulation systems.
