@@ -138,7 +138,7 @@ class TestOpenRouterClientInitialization:
         client = OpenRouterClient(client_config)
         assert client.client is not None
         # Check base URL
-        assert client.client.base_url == "https://openrouter.ai/api/v1"
+        assert str(client.client.base_url).rstrip("/") == "https://openrouter.ai/api/v1"
         # Check headers
         assert (
             client.client.default_headers["HTTP-Referer"]

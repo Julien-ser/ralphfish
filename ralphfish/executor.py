@@ -162,8 +162,8 @@ class LoopExecutor:
                         additional_context=full_prompt, round_num=round_num
                     )
                 )
-                 tasks.append(task)
-             # Wait for all tasks in the batch to complete, capturing any exceptions
+                tasks.append(task)
+            # Wait for all tasks in the batch to complete, capturing any exceptions
             try:
                 results = await asyncio.gather(*tasks)  # raises if any task fails
             except Exception as e:
