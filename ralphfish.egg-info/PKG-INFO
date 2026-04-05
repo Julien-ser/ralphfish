@@ -245,16 +245,16 @@ The `on_round_complete` callback can be used to inject fact extraction or confid
 ## Development Status
 
 **Phase 1**: Planning & Setup - ✅ Complete
-- [x] Wiggum loop specification defined
-- [x] Python project structure (`pyproject.toml`)
-- [x] OpenRouter client wrapper
-- [x] Base data models
+- [x] Define the Wiggum loop specification
+- [x] Set up Python project with `pyproject.toml`
+- [x] Create OpenRouter API client wrapper
+- [x] Design the base data models
 
-**Phase 2**: Core Engine Development - In Progress
+**Phase 2**: Core Engine Development - ✅ Complete
 - [x] Build seed document parser using LLM extraction
 - [x] Implement `Agent` class with persona template rendering
 - [x] Create Wiggum loop executor
-- [ ] Develop inter-agent communication layer
+- [x] Develop inter-agent communication layer with message passing, context window management, and memory summarization
 
 ## Project Context
 
