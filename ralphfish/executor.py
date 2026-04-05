@@ -35,6 +35,7 @@ class LoopExecutor:
         initial_state: SimulationState,
         rounds: int,
         protocol: InteractionProtocol = InteractionProtocol.DISCUSSION,
+        max_concurrent: int = 1,
         on_round_complete: Optional[Callable[[int, SimulationState], Any]] = None,
     ):
         """
@@ -60,11 +61,14 @@ class LoopExecutor:
             raise ValueError("At least one agent is required")
         if rounds <= 0:
             raise ValueError("Number of rounds must be positive")
+        if max_concurrent < 1:
+            raise ValueError("max_concurrent must be >= 1")
 
         self.agents = agents
         self.state = initial_state
         self.rounds = rounds
         self.protocol = protocol
+        self.max_concurrent = max_concurrent
         self.on_round_complete = on_round_complete
 
         # Ensure state has the right agents list (sync with provided agents)
@@ -129,47 +133,63 @@ class LoopExecutor:
 
     async def _execute_discussion(self, round_num: int):
         """
-        Discussion protocol: agents take sequential turns.
+        Discussion protocol: agents take turns, optionally with concurrent batches.
 
-        Each agent, when it's their turn:
-        - Receives all messages from previous rounds
-        - Receives all messages already sent in the current round
-        - Generates a response
-        - That response is broadcast to all other agents
+        Agents are processed in batches of size up to max_concurrent. Within each batch,
+        multiple agents generate responses concurrently based on the same snapshot of
+        the conversation (messages from previous rounds and earlier batches). After
+        a batch completes, all responses are broadcast to all agents before the next
+        batch begins. This preserves causal order across batches while enabling
+        parallel LLM calls within a batch.
 
-        Turn order is the order of agents in the list.
+        Turn order (across batches) is the order of agents in the list.
         """
-        for agent in self.agents:
-            # Gather messages this agent can see
-            visible_messages = self._get_visible_messages(agent, round_num)
-            conversation_context = self._format_conversation(visible_messages)
+        agents_list = list(self.agents)  # preserve order
+        for batch_start in range(0, len(agents_list), self.max_concurrent):
+            batch = agents_list[batch_start : batch_start + self.max_concurrent]
+            # Prepare tasks for this batch
+            tasks = []
 
-            # Build additional context (scenario, previous round summary)
-            additional = self._build_round_intro(round_num)
-
-            # Combine contexts
-            full_prompt = self._combine_contexts(additional, conversation_context)
-
-            # Generate response
-            response = await agent.generate_response(
-                additional_context=full_prompt, round_num=round_num
-            )
-
-            # Update global state
-            self.state.message_history.append(response)
-
-            # Broadcast to other agents
-            self._broadcast(response, exclude=agent)
-
-            logger.debug(
-                "Agent response recorded",
-                extra={
-                    "agent": agent.persona.name,
-                    "round": round_num,
-                    "msg_id": response.timestamp,
-                },
-            )
-
+            for agent in batch:
+                # Build context based on current state (which includes previous rounds and earlier batches)
+                visible = self._get_visible_messages(agent, round_num)
+                conversation_context = self._format_conversation(visible)
+                additional = self._build_round_intro(round_num)
+                full_prompt = self._combine_contexts(additional, conversation_context)
+                # Create task for this agent's response
+                task = asyncio.create_task(
+                    agent.generate_response(
+                        additional_context=full_prompt, round_num=round_num
+                    )
+                )
+                tasks.append(task)
+                agent_task_pairs.append((agent, task))
+            # Wait for all tasks in the batch to complete, capturing any exceptions
+            try:
+                results = await asyncio.gather(*tasks)  # raises if any task fails
+            except Exception as e:
+                logger.error(
+                    "Batch agent responses failed",
+                    extra={
+                        "round": round_num,
+                        "agents": [a.persona.id for a in batch],
+                        "error": str(e),
+                    },
+                    exc_info=True,
+                )
+                raise
+            # Process responses in order
+            for agent, response in zip(batch, results):
+                self.state.message_history.append(response)
+                self._broadcast(response, exclude=agent)
+                logger.debug(
+                    "Agent response recorded",
+                    extra={
+                        "agent": agent.persona.name,
+                        "round": round_num,
+                        "msg_id": response.timestamp,
+                    },
+                )
         # After all agents have spoken, optionally trigger memory summarization
         await self._maybe_summarize_all_agents(round_num)
 
@@ -305,6 +325,7 @@ async def run_simulation(
     scenario: "Scenario",
     rounds: int,
     protocol: InteractionProtocol = InteractionProtocol.DISCUSSION,
+    max_concurrent: int = 1,
     on_round_complete: Optional[Callable] = None,
     initial_state: Optional[SimulationState] = None,
 ) -> SimulationState:
