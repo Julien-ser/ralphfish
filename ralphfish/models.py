@@ -149,7 +149,7 @@ class SimulationState(BaseModel):
 
     round: int = 0
     scenario: Scenario
-    agents: List[AgentPersona]
+    agents: List[AgentPersona] = Field(default_factory=list)
     world_facts: Dict[str, Fact] = Field(default_factory=dict)
     message_history: List[Message] = Field(default_factory=list)
     aggregated_facts: List[Fact] = Field(default_factory=list)

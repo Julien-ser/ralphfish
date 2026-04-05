@@ -132,9 +132,9 @@ class Agent:
                 return jinja_template.render(
                     name=self.persona.name,
                     background=self.persona.background,
-                    traits=", ".join(self.persona.traits),
-                    goals=self.persona.goals,
-                    biases=self.persona.biases,
+                    traits=self.persona.traits,  # raw list for iteration
+                    goals=self.persona.goals,  # raw list for iteration
+                    biases=self.persona.biases,  # raw list for iteration
                     style=self.persona.communication_style,
                 )
             except ImportError:
