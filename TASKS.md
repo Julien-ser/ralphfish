@@ -12,7 +12,7 @@
 - [x] Develop inter-agent communication layer: message passing with role labels, context window management, and optional memory summarization
 
 ## Phase 3: Prediction & Output Generation
-- [ ] Build prediction synthesizer: aggregate final round outputs, extract consensus/dissent patterns, compute confidence scores based on agreement metrics
+- [x] Build prediction synthesizer: aggregate final round outputs, extract consensus/dissent patterns, compute confidence scores based on agreement metrics
 - [ ] Implement structured report generator using Jinja2 templates supporting JSON, YAML, and markdown outputs with sections: scenario summary, agent lineup, round evolution, final prediction, divergence analysis
 - [ ] Add export functionality: save reports to filesystem with timestamped naming, option to dump full transcript or summary-only
 - [ ] Create configurable persona generator: random persona creation within user-defined constraints ( archetypes, demographic ranges, bias patterns)

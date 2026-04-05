@@ -214,6 +214,49 @@ final_state = await run_simulation(
 
 The `on_round_complete` callback can be used to inject fact extraction or confidence scoring after each round; this will be implemented in the prediction synthesizer phase.
 
+## Prediction Synthesizer
+
+The `PredictionSynthesizer` analyzes the final state of a simulation to extract consensus, identify dissent, and compute confidence scores based on agent agreement.
+
+```python
+from ralphfish.synthesizer import PredictionSynthesizer
+
+# After simulation completes
+synthesizer = PredictionSynthesizer(
+    consensus_threshold=0.7,      # 70% agreement required for consensus
+    strong_consensus_threshold=0.9,
+    min_agents_for_fact=2         # Minimum agents mentioning a fact
+)
+
+report = await synthesizer.synthesize(final_state)
+
+# Print summary
+print(report.get_summary())
+
+# Access consensus facts
+for fact in report.consensus_facts:
+    print(f"Consensus: {fact.value}")
+    print(f"  Confidence: {fact.confidence:.2%}")
+    print(f"  Supporting agents: {', '.join(fact.supporting_agents)}")
+
+# Access dissent points
+for fact in report.dissent_points:
+    print(f"Dissent: {fact.value}")
+    print(f"  Support: {len(fact.supporting_agents)} vs {len(fact.opposing_agents)}")
+
+# View agent alignments
+for agent_id, alignment in report.agent_alignments.items():
+    print(f"{alignment.agent_name}: {alignment.consensus_alignment_score:.2%} aligned with consensus")
+```
+
+The `SynthesisReport` includes:
+- `consensus_facts`: Facts with high agreement
+- `dissent_points`: Issues with significant disagreement
+- `agent_alignments`: How each agent aligns with the consensus
+- `overall_consensus_strength`: Single metric summarizing agreement level
+
+Reports can be exported to JSON, YAML, or Markdown (see upcoming report generator task).
+
 ## Development Status
 
 **Phase 1**: Planning & Setup - ✅ Complete
@@ -227,6 +270,12 @@ The `on_round_complete` callback can be used to inject fact extraction or confid
 - [x] Implement `Agent` class with persona template rendering
 - [x] Create Wiggum loop executor
 - [x] Develop inter-agent communication layer with message passing, context window management, and memory summarization
+
+**Phase 3**: Prediction & Output Generation - 🔄 In Progress
+- [x] Build prediction synthesizer (aggregation, consensus/dissent detection, confidence scoring)
+- [ ] Implement structured report generator using Jinja2 templates
+- [ ] Add export functionality with timestamped filesystem output
+- [ ] Create configurable persona generator
 
 ## Project Context
 
