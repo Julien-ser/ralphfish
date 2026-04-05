@@ -2008,3 +2008,78 @@ To https://github.com/Julien-ser/ralphfish.git
 
 Next task: Implement structured report generator using Jinja2 templates.
 📝 Log saved: logs/iteration-10.md
+📊 Token Usage: 13000 / Session: 41250 / 64000
+Unstaged changes after reset:
+M	logs/worker-session-20260404-215505.log
+✅ Changes committed
+To https://github.com/Julien-ser/ralphfish.git
+   99c6b08..c420067  wiggum/session -> wiggum/session
+✅ Pushed to GitHub (branch: wiggum/session)
+📊 Updated Tasks: 8/15 completed, 7 remaining
+   Next task: Implement structured report generator using Jinja2 templates...
+📍 Iteration 11 at Sat Apr  4 10:08:19 PM EDT 2026...
+🤖 OpenCode processing: Implement structured report generator using Jinja2 templates supporting JSON, YAML, and markdown outputs with sections: scenario summary, agent lineup, round evolution, final prediction, divergence analysis
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+Let me check the current project structure and understand the codebase before implementing the structured report generator.
+[0m✱ [0mGlob "**/*.py"[90m 12 matches[0m
+[0m→ [0mRead TASKS.md
+[0m
+[0m$ [0mcat .agent_role 2>/dev/null || echo "generic"
+generic
+[0m
+[0m→ [0mRead ralphfish/models.py
+[0m→ [0mRead pyproject.toml
+[0m→ [0mRead ralphfish/synthesizer.py
+[0m→ [0mRead README.md
+[0m✱ [0mGlob "**/reporter*.py"[90m 0 matches[0m
+[0m✱ [0mGlob "**/templates/**"[90m 0 matches[0m
+[0m
+[0m# [0mTodos
+[ ] Create report_generator.py with ReportGenerator class and Jinja2 templates
+[ ] Create Jinja2 template files for markdown, JSON, and YAML outputs
+[ ] Implement export functionality with timestamped filesystem saving
+[ ] Update README.md with report generator usage examples
+[ ] Write unit tests for the report generator
+[ ] Mark task as complete in TASKS.md
+[0m
+[0m← [0mWrite ralphfish/report_generator.py
+Wrote file successfully.
+[0m
+Now let me verify the module can import correctly and then create template files to complete the Jinja2 template requirement:
+[0m$ [0mpython -c "from ralphfish.report_generator import ReportGenerator; print('Import successful')"
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from ralphfish.report_generator import ReportGenerator; print('Import successful')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/julien/Desktop/Free-Wiggum-opencode/projects/ralphfish/ralphfish/report_generator.py", line 22, in <module>
+    from .models import SimulationState, SynthesisReport, AgentPersona
+ImportError: cannot import name 'SynthesisReport' from 'ralphfish.models' (/home/julien/Desktop/Free-Wiggum-opencode/projects/ralphfish/ralphfish/models.py)
+[0m
+I need to fix the import - `SynthesisReport` is in `synthesizer.py`, not `models.py`. Let me edit:
+[0m← [0mEdit ralphfish/report_generator.py
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/ralphfish/ralphfish/report_generator.py
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/ralphfish/ralphfish/report_generator.py
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/ralphfish/ralphfish/report_generator.py
+@@ -18,10 +18,10 @@
+ 
+ import yaml
+ from jinja2 import Template, Environment, FileSystemLoader
+ 
+-from .models import SimulationState, SynthesisReport, AgentPersona
+-from .synthesizer import PredictionSynthesizer
++from .models import SimulationState, AgentPersona
++from .synthesizer import PredictionSynthesizer, SynthesisReport
+ 
+ 
+ class ReportGenerator:
+     """
+
+[0m
+[0m$ [0mpython -c "from ralphfish.report_generator import ReportGenerator; print('Import successful')"
+Import successful
+[0m
+📝 Log saved: logs/iteration-11.md
+📊 Token Usage: 4750 / Session: 46000 / 64000
