@@ -540,3 +540,56 @@ Let's do a final verification of the fixed tests:
 tests/test_client.py::TestOpenRouterClientInitialization::test_init_creates_async_client PASSED [ 50%]
 tests/test_communication.py::test_execute_discussion_basic PASSED        [100%]
 [0m
+Perfect. Now I'll commit the fixes:
+[0m$ [0mgit add -A && git diff --cached --stat
+logs/iteration-31.md                               | 542 +++++++++++++++++++++
+ ralphfish/__pycache__/cli.cpython-314.pyc          | Bin 0 -> 13475 bytes
+ ralphfish/__pycache__/executor.cpython-314.pyc     | Bin 20641 -> 20563 bytes
+ ralphfish/executor.py                              |   4 +-
+ .../test_client.cpython-314-pytest-7.4.3.pyc       | Bin 76531 -> 77294 bytes
+ tests/test_client.py                               |   2 +-
+ 6 files changed, 545 insertions(+), 3 deletions(-)
+[0m
+[0m$ [0mgit commit -m "Fix test failures: indentation in executor.py and URL comparison in test_client.py
+
+- Fix indentation error in LoopExecutor._execute_discussion (line 165)
+- Update test_client to handle trailing slash in base_url comparison
+- CLI interface already present with argparse for run-simulation, generate-personas, export-report"
+[wiggum/session ae6e680] Fix test failures: indentation in executor.py and URL comparison in test_client.py
+ 6 files changed, 545 insertions(+), 3 deletions(-)
+ create mode 100644 logs/iteration-31.md
+ create mode 100644 ralphfish/__pycache__/cli.cpython-314.pyc
+[0m
+Done. Fixed indentation in `executor.py` and URL comparison in `test_client.py`. CLI interface with argparse already implemented (run-simulation, generate-personas, export-report).
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# ralphfish
+
+## Phase 1: Planning & Setup
+- [x] Define the Wiggum loop specification: document the exact iteration pattern (agent reasoning → interaction → state update → aggregation) with pseudocode and state transition rules
+- [x] Set up Python project with `pyproject.toml`, including dependencies: `openai` (OpenRouter SDK), `pydantic` (data validation), `jinja2` (templating), `python-dotenv` (config)
+- [x] Create OpenRouter API client wrapper with free-tier model routing, request/response logging, and exponential backoff retry logic
+- [x] Design the base data models: `AgentPersona` (name, background, traits, goals), `SimulationState` (round, agents, world facts), `Scenario` (seed text, extracted entities)
+
+## Phase 2: Core Engine Development
+- [x] Build seed document parser using LLM extraction: parse user input to identify key entities, relationships, conflicts, and initial conditions (output: structured JSON)
+- [x] Implement `Agent` class with persona template rendering, message history management, and per-agent LLM call isolation
+- [x] Develop inter-agent communication layer: message passing with role labels, context window management, and optional memory summarization
+
+## Phase 3: Prediction & Output Generation
+- [x] Build prediction synthesizer: aggregate final round outputs, extract consensus/dissent patterns, compute confidence scores based on agreement metrics
+- [x] Implement structured report generator using Jinja2 templates supporting JSON, YAML, and markdown outputs with sections: scenario summary, agent lineup, round evolution, final prediction, divergence analysis
+- [x] Add export functionality: save reports to filesystem with timestamped naming, option to dump full transcript or summary-only
+ - [x] Create configurable persona generator: random persona creation within user-defined constraints ( archetypes, demographic ranges, bias patterns)
+
+## Phase 4: Testing, Optimization & Documentation
+- [x] Write unit tests for all core components with mocked OpenRouter responses; achieve >90% coverage for state machines and data validation
+- [x] Implement concurrent agent execution using `asyncio` to parallelize LLM calls while respecting OpenRouter rate limits (configurable max_concurrent)
+- [ ] Create CLI interface with `argparse`: commands for `run-simulation`, `generate-personas`, `export-report` with flags for agent count, rounds, model selection
+- [ ] Write comprehensive README with quickstart example, architecture diagram, persona customization guide, and troubleshooting for common OpenRouter errors
+```
+
+**Completed at:** Sun Apr  5 12:08:08 AM EDT 2026

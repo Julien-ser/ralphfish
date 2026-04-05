@@ -120,7 +120,7 @@ class OpenRouterClient:
         """Execute API operation with exponential backoff retry."""
         delay = self.config.base_delay
 
-        for attempt in range(1, self.config.max_retries + 1):
+        for attempt in range(self.config.max_retries + 1):
             try:
                 start_time = time.time()
                 result = await operation(*args, **kwargs)

@@ -295,7 +295,11 @@ class TestClientRetryLogic:
         async def mock_create(*args, **kwargs):
             nonlocal call_count
             call_count += 1
-            raise RateLimitError("Rate limited always")
+            raise RateLimitError(
+                message="Rate limited always",
+                response=MagicMock(),
+                body={"error": {"message": "Rate limited always"}},
+            )
 
         with patch.object(
             client.client.chat.completions, "create", side_effect=mock_create
