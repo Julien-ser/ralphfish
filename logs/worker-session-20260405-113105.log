@@ -316,3 +316,7 @@ The CLI supports:
 - Multi-format report export
 📝 Log saved: logs/iteration-37.md
 📊 Token Usage: 6750 / Session: 6750 / 64000
+✅ Changes committed
+To https://github.com/Julien-ser/ralphfish.git
+   f54f504..0b3741b  wiggum/session -> wiggum/session
+✅ Pushed to GitHub (branch: wiggum/session)
