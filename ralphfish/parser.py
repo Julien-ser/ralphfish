@@ -17,7 +17,7 @@ import asyncio
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 
-from .client import OpenRouterClient, simple_chat
+from .client import OpenRouterClient, simple_chat, ClientConfig
 from .models import Scenario, Fact, AgentPersona
 
 logger = logging.getLogger(__name__)
@@ -213,7 +213,7 @@ class SeedParser:
         import re
 
         cleaned = re.sub(r"[^\w\s]", "", statement.lower())
-        words = cleaned.split()[:5]
+        words = cleaned.split()[:4]
         return "_".join(words) if words else "unnamed_fact"
 
     def _extract_title(self, text: str, max_words: int = 10) -> str:
@@ -257,9 +257,6 @@ async def parse_seed(
     Returns:
         Scenario object
     """
-    # Import here to avoid circular dependency
-    from .client import OpenRouterClient, ClientConfig
-
     config = ClientConfig(api_key=api_key) if api_key else ClientConfig()
     client = OpenRouterClient(config)
     try:

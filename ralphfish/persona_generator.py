@@ -169,8 +169,8 @@ class PersonaGeneratorConfig:
             archetype_backgrounds={
                 "scientist": [
                     "research scientist in artificial intelligence",
-                    "biologist specializing in genetics",
-                    "physicist working on quantum computing",
+                    "research biologist specializing in genetics",
+                    "research physicist working on quantum computing",
                     "environmental scientist studying climate change",
                     "neuroscience researcher",
                 ],
