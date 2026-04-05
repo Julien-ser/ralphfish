@@ -231,13 +231,14 @@ class SeedParser:
             **kwargs: Additional arguments to pass to parse()
 
         Returns:
-            List of Scenario objects
+            List of Scenario objects (successful parses only; exceptions are raised)
         """
         if not self.client:
             raise ValueError("Batch parsing requires an OpenRouterClient")
 
         tasks = [self.parse(text, **kwargs) for text in texts]
-        return await asyncio.gather(*tasks, return_exceptions=True)
+        results = await asyncio.gather(*tasks, return_exceptions=False)
+        return results
 
 
 # Convenience function for one-off parsing
@@ -259,7 +260,7 @@ async def parse_seed(
     # Import here to avoid circular dependency
     from .client import OpenRouterClient, ClientConfig
 
-    config = ClientConfig(api_key=api_key)
+    config = ClientConfig(api_key=api_key) if api_key else ClientConfig()
     client = OpenRouterClient(config)
     try:
         parser = SeedParser(client=client, model=model)
