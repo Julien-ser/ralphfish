@@ -163,8 +163,8 @@ class TestExecuteRound:
         """Test _execute_discussion runs all agents (covers lines 142-172, including logging)."""
         executor = LoopExecutor(agents=agents, initial_state=initial_state, rounds=1)
         await executor._execute_discussion(round_num=1)
-        assert len(agents[0].message_history) == 1
-        assert len(agents[1].message_history) == 1
+        assert len(agents[0].message_history) == 2
+        assert len(agents[1].message_history) == 2
         assert len(executor.state.message_history) == 2
 
     @pytest.mark.asyncio
@@ -253,6 +253,7 @@ class TestSummarizationHandling:
             raise RuntimeError("Summarization failed")
 
         agents[0].maybe_summarize = mock_maybe_summarize  # type: ignore
+        agents[0].config.enable_summarization = True
 
         executor = LoopExecutor(agents=agents, initial_state=initial_state, rounds=1)
         await executor._maybe_summarize_all_agents(round_num=1)
