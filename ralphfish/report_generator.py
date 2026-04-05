@@ -66,6 +66,7 @@ class ReportGenerator:
         state: SimulationState,
         report: SynthesisReport,
         format: Optional[str] = None,
+        summary_only: bool = False,
     ) -> str:
         """
         Generate a report in the specified format.
@@ -75,6 +76,8 @@ class ReportGenerator:
             report: SynthesisReport from the PredictionSynthesizer
             format: Output format ('markdown', 'json', 'yaml').
                    If None, uses self.default_format.
+            summary_only: If True, generate only summary without full transcript.
+                         Default is False (full report with round evolution).
 
         Returns:
             Rendered report as a string
@@ -90,7 +93,7 @@ class ReportGenerator:
             )
 
         # Prepare comprehensive context for templates
-        context = self._prepare_context(state, report)
+        context = self._prepare_context(state, report, summary_only=summary_only)
 
         # Get template
         if self.env and fmt in self.env.list_templates():
@@ -126,6 +129,7 @@ class ReportGenerator:
         output_dir: Path,
         filename_prefix: Optional[str] = None,
         formats: Optional[list] = None,
+        summary_only: bool = False,
     ) -> Dict[str, Path]:
         """
         Generate and export reports to filesystem.
@@ -137,12 +141,15 @@ class ReportGenerator:
             filename_prefix: Prefix for filename (default: scenario title or 'report')
             formats: List of formats to export. If None, uses default_format only.
                     Use ['all'] for all formats.
+            summary_only: If True, export summary reports without full transcript.
+                         Default is False (full report).
 
         Returns:
             Dictionary mapping format names to Path objects of saved files
 
         Example:
             generator.export(state, report, Path("./reports"), formats=["markdown", "json"])
+            generator.export(state, report, Path("./reports"), formats=["all"], summary_only=True)
         """
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -156,6 +163,10 @@ class ReportGenerator:
                 for c in filename_prefix
             ).strip()
 
+        # Add summary suffix if summary_only
+        if summary_only:
+            filename_prefix = f"{filename_prefix}_summary"
+
         # Determine which formats to generate
         if formats is None:
             formats = [self.default_format]
@@ -166,7 +177,7 @@ class ReportGenerator:
 
         for fmt in formats:
             try:
-                content = self.generate(state, report, fmt)
+                content = self.generate(state, report, fmt, summary_only=summary_only)
                 timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
                 filename = f"{filename_prefix}_{timestamp}.{fmt}"
                 filepath = output_dir / filename
@@ -181,7 +192,10 @@ class ReportGenerator:
         return saved_files
 
     def _prepare_context(
-        self, state: SimulationState, report: SynthesisReport
+        self,
+        state: SimulationState,
+        report: SynthesisReport,
+        summary_only: bool = False,
     ) -> Dict[str, Any]:
         """
         Prepare comprehensive context dictionary for template rendering.
@@ -189,20 +203,24 @@ class ReportGenerator:
         Args:
             state: SimulationState
             report: SynthesisReport
+            summary_only: If True, omit detailed round evolution and transcript data
 
         Returns:
             Dictionary with all data needed for templates
         """
-        # Build round summaries
+        # Build round summaries (only if not summary_only)
         round_summaries = []
-        for r in range(1, state.round + 1):
-            round_summaries.append(state.get_round_summary(r))
-
-        # Build full message history for each agent
         agent_messages = {}
-        for agent in state.agents:
-            agent_msgs = [m for m in state.message_history if m.agent_id == agent.id]
-            agent_messages[agent.id] = agent_msgs
+        if not summary_only:
+            for r in range(1, state.round + 1):
+                round_summaries.append(state.get_round_summary(r))
+
+            # Build full message history for each agent
+            for agent in state.agents:
+                agent_msgs = [
+                    m for m in state.message_history if m.agent_id == agent.id
+                ]
+                agent_messages[agent.id] = agent_msgs
 
         # Serialize Pydantic models to dicts for JSON compatibility
         consensus_facts_dicts = [fact.model_dump() for fact in report.consensus_facts]
@@ -212,6 +230,11 @@ class ReportGenerator:
             aid: alignment.model_dump()
             for aid, alignment in report.agent_alignments.items()
         }
+
+        # Round evolution data (conditional)
+        total_rounds = state.round
+        round_summaries_list = round_summaries if not summary_only else []
+        message_count = len(state.message_history) if not summary_only else 0
 
         context = {
             # Scenario info
@@ -238,10 +261,10 @@ class ReportGenerator:
                 }
                 for agent in state.agents
             ],
-            # Round evolution
-            "total_rounds": state.round,
-            "round_summaries": round_summaries,
-            "message_count": len(state.message_history),
+            # Round evolution (may be empty in summary mode)
+            "total_rounds": total_rounds,
+            "round_summaries": round_summaries_list,
+            "message_count": message_count,
             # Final prediction (from report) - use dict versions for JSON serialization
             "consensus_facts": consensus_facts_dicts,
             "dissent_points": dissent_points_dicts,
@@ -256,6 +279,8 @@ class ReportGenerator:
             "synthesized_at": report.synthesized_at,
             "generated_at": datetime.utcnow(),
             "protocol": state.protocol.value,
+            # Summary mode flag
+            "summary_only": summary_only,
         }
 
         return context
@@ -264,6 +289,8 @@ class ReportGenerator:
         """Default Jinja2 template for Markdown output."""
         return """
 # Simulation Report: {{ scenario_summary.title }}
+
+{% if summary_only %}**SUMMARY ONLY**{% else %}**Full Transcript**{% endif %}
 
 **Generated:** {{ generated_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}
 **Synthesized:** {{ synthesized_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}
@@ -315,6 +342,7 @@ class ReportGenerator:
 
 {% endfor %}
 
+{% if not summary_only %}
 ---
 
 ## Round Evolution
@@ -337,6 +365,7 @@ class ReportGenerator:
 {% endif %}
 
 {% endfor %}
+{% endif %}
 
 ---
 
@@ -431,9 +460,9 @@ class ReportGenerator:
   "scenario": {{ scenario_summary | tojson }},
   "agents": {{ agent_lineup | tojson }},
   "simulation": {
-    "total_rounds": {{ total_rounds }},
+    "total_rounds": {{ total_rounds }}{% if not summary_only %},
     "total_messages": {{ message_count }},
-    "round_summaries": {{ round_summaries | tojson }}
+    "round_summaries": {{ round_summaries | tojson }}{% endif %}
   },
   "synthesis": {
     "consensus_facts": {{ consensus_facts | tojson }},
@@ -448,7 +477,8 @@ class ReportGenerator:
   "metadata": {
     "synthesized_at": "{{ synthesized_at.isoformat() }}",
     "generated_at": "{{ generated_at.isoformat() }}",
-    "protocol": "{{ protocol }}"
+    "protocol": "{{ protocol }}",
+    "summary_only": {{ summary_only | tojson }}
   }
 }"""
 
@@ -473,9 +503,9 @@ agents:
 {% endfor %}
 
 simulation:
-  total_rounds: {{ total_rounds }}
+  total_rounds: {{ total_rounds }}{% if not summary_only %}
   total_messages: {{ message_count }}
-  round_summaries: {{ round_summaries | tojson }}
+  round_summaries: {{ round_summaries | tojson }}{% endif %}
 
 synthesis:
   consensus_facts: {{ consensus_facts | tojson }}
@@ -491,6 +521,7 @@ metadata:
   synthesized_at: "{{ synthesized_at.isoformat() }}"
   generated_at: "{{ generated_at.isoformat() }}"
   protocol: "{{ protocol }}"
+  summary_only: {{ summary_only | tojson }}
 """
 
 
@@ -501,6 +532,7 @@ async def generate_report(
     format: str = "markdown",
     output_dir: Optional[Path] = None,
     template_dir: Optional[Path] = None,
+    summary_only: bool = False,
 ) -> str:
     """
     Convenience function to generate a report from a simulation state.
@@ -511,21 +543,24 @@ async def generate_report(
         format: Output format ('markdown', 'json', 'yaml')
         output_dir: If provided, also saves to filesystem
         template_dir: Custom template directory
+        summary_only: If True, generate summary without full transcript.
+                     Default is False.
 
     Returns:
         Rendered report string
 
     Example:
         report = await generate_report(final_state, format="markdown")
+        report = await generate_report(final_state, format="markdown", summary_only=True)
     """
     if synthesizer is None:
         synthesizer = PredictionSynthesizer()
 
     report = await synthesizer.synthesize(state)
     generator = ReportGenerator(template_dir=template_dir, default_format=format)
-    output = generator.generate(state, report, format)
+    output = generator.generate(state, report, format, summary_only=summary_only)
 
     if output_dir:
-        generator.export(state, report, output_dir)
+        generator.export(state, report, output_dir, summary_only=summary_only)
 
     return output

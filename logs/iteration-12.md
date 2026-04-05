@@ -1353,3 +1353,78 @@ Perfect! All tests pass. Now I need to:
 2. Commit all changes and push to GitHub
 
 Let's update TASKS.md:
+Now commit all changes:
+[0m$ [0mgit add . && git commit -m "feat: complete structured report generator with comprehensive tests and documentation"
+[wiggum/session 4da72a3] feat: complete structured report generator with comprehensive tests and documentation
+ 10 files changed, 2813 insertions(+), 8 deletions(-)
+ create mode 100644 logs/iteration-12.md
+ create mode 100644 tests/__pycache__/test_report_generator.cpython-314-pytest-7.4.3.pyc
+ create mode 100644 tests/test_report_generator.py
+[0m
+Now push to GitHub:
+[0m$ [0mgit push origin main
+Everything up-to-date
+[0m
+Let's check the current git status:
+[0m$ [0mgit status
+On branch wiggum/session
+Your branch is ahead of 'origin/main' by 16 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   logs/iteration-12.md
+	modified:   logs/worker-session-20260404-215505.log
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
+We're on `wiggum/session` branch. Let's push to `origin/main` as instructed:
+[0m$ [0mgit push origin HEAD:main
+To https://github.com/Julien-ser/ralphfish.git
+   fc59e27..4da72a3  HEAD -> main
+[0m
+✅ **Task completed**: Structured report generator with Jinja2 templates is fully implemented.
+
+**Deliverables:**
+- `ReportGenerator` class generates reports in JSON, YAML, and Markdown
+- Includes all required sections: scenario summary, agent lineup, round evolution, final prediction, divergence analysis
+- Export functionality with timestamped filesystem output
+- Comprehensive test suite (14 tests, all passing)
+- Updated exports in `__init__.py`
+- Full documentation added to README
+- Bug fix: Serialized Pydantic models for JSON compatibility
+
+**Tests:** 45/45 passing.
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# ralphfish
+
+## Phase 1: Planning & Setup
+- [x] Define the Wiggum loop specification: document the exact iteration pattern (agent reasoning → interaction → state update → aggregation) with pseudocode and state transition rules
+- [x] Set up Python project with `pyproject.toml`, including dependencies: `openai` (OpenRouter SDK), `pydantic` (data validation), `jinja2` (templating), `python-dotenv` (config)
+- [x] Create OpenRouter API client wrapper with free-tier model routing, request/response logging, and exponential backoff retry logic
+- [x] Design the base data models: `AgentPersona` (name, background, traits, goals), `SimulationState` (round, agents, world facts), `Scenario` (seed text, extracted entities)
+
+## Phase 2: Core Engine Development
+- [x] Build seed document parser using LLM extraction: parse user input to identify key entities, relationships, conflicts, and initial conditions (output: structured JSON)
+- [x] Implement `Agent` class with persona template rendering, message history management, and per-agent LLM call isolation
+- [x] Develop inter-agent communication layer: message passing with role labels, context window management, and optional memory summarization
+
+## Phase 3: Prediction & Output Generation
+- [x] Build prediction synthesizer: aggregate final round outputs, extract consensus/dissent patterns, compute confidence scores based on agreement metrics
+- [x] Implement structured report generator using Jinja2 templates supporting JSON, YAML, and markdown outputs with sections: scenario summary, agent lineup, round evolution, final prediction, divergence analysis
+- [ ] Add export functionality: save reports to filesystem with timestamped naming, option to dump full transcript or summary-only
+- [ ] Create configurable persona generator: random persona creation within user-defined constraints ( archetypes, demographic ranges, bias patterns)
+
+## Phase 4: Testing, Optimization & Documentation
+- [ ] Write unit tests for all core components with mocked OpenRouter responses; achieve >90% coverage for state machines and data validation
+- [ ] Implement concurrent agent execution using `asyncio` to parallelize LLM calls while respecting OpenRouter rate limits (configurable max_concurrent)
+- [ ] Create CLI interface with `argparse`: commands for `run-simulation`, `generate-personas`, `export-report` with flags for agent count, rounds, model selection
+- [ ] Write comprehensive README with quickstart example, architecture diagram, persona customization guide, and troubleshooting for common OpenRouter errors
+```
+
+**Completed at:** Sat Apr  4 10:15:34 PM EDT 2026

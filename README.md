@@ -286,13 +286,23 @@ print(markdown)
 ```python
 from pathlib import Path
 
-# Export reports (auto-generates timestamped filenames)
+# Export full reports with transcript (default)
 saved_files = generator.export(
     final_state,
     report,
     output_dir=Path("./reports"),
     filename_prefix="my_simulation",
     formats=["markdown", "json", "yaml"]  # or use ["all"]
+)
+
+# Export summary-only reports (without round-by-round transcript)
+summary_files = generator.export(
+    final_state,
+    report,
+    output_dir=Path("./reports"),
+    filename_prefix="my_simulation",
+    formats=["all"],
+    summary_only=True  # Omit detailed round evolution
 )
 
 # saved_files maps format -> Path object
@@ -356,8 +366,8 @@ Template variables are available in the context; see `ReportGenerator._prepare_c
 
 **Phase 3**: Prediction & Output Generation - 🔄 In Progress
 - [x] Build prediction synthesizer (aggregation, consensus/dissent detection, confidence scoring)
-- [ ] Implement structured report generator using Jinja2 templates
-- [ ] Add export functionality with timestamped filesystem output
+- [x] Implement structured report generator using Jinja2 templates (JSON, YAML, Markdown)
+- [x] Add export functionality with timestamped filesystem output and summary-only option
 - [ ] Create configurable persona generator
 
 ## Project Context
