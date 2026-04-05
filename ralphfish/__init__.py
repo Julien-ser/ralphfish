@@ -14,6 +14,8 @@ from .models import (
 )
 from .parser import SeedParser, parse_seed, EXTRACTION_PROMPT_TEMPLATE
 from .executor import LoopExecutor, run_simulation
+from .synthesizer import PredictionSynthesizer, SynthesisReport
+from .report_generator import ReportGenerator, generate_report
 
 __all__ = [
     # Agent
@@ -41,6 +43,12 @@ __all__ = [
     # Executor
     "LoopExecutor",
     "run_simulation",
+    # Synthesizer
+    "PredictionSynthesizer",
+    "SynthesisReport",
+    # Report Generator
+    "ReportGenerator",
+    "generate_report",
 ]
 
 __version__ = "0.1.0"

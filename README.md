@@ -255,7 +255,90 @@ The `SynthesisReport` includes:
 - `agent_alignments`: How each agent aligns with the consensus
 - `overall_consensus_strength`: Single metric summarizing agreement level
 
-Reports can be exported to JSON, YAML, or Markdown (see upcoming report generator task).
+Reports can be exported to JSON, YAML, or Markdown using the report generator.
+
+## Report Generator
+
+The `ReportGenerator` class creates comprehensive simulation reports in multiple formats using Jinja2 templates.
+
+### Basic Usage
+
+```python
+from ralphfish import ReportGenerator, PredictionSynthesizer
+
+# After simulation completes
+synthesizer = PredictionSynthesizer()
+report = await synthesizer.synthesize(final_state)
+
+# Create a report generator
+generator = ReportGenerator()
+
+# Generate in different formats
+markdown = generator.generate(final_state, report, format="markdown")
+json_data = generator.generate(final_state, report, format="json")
+yaml_data = generator.generate(final_state, report, format="yaml")
+
+print(markdown)
+```
+
+### Exporting to Filesystem
+
+```python
+from pathlib import Path
+
+# Export reports (auto-generates timestamped filenames)
+saved_files = generator.export(
+    final_state,
+    report,
+    output_dir=Path("./reports"),
+    filename_prefix="my_simulation",
+    formats=["markdown", "json", "yaml"]  # or use ["all"]
+)
+
+# saved_files maps format -> Path object
+print(f"Saved {len(saved_files)} reports")
+```
+
+### Using the Convenience Function
+
+```python
+from ralphfish import generate_report
+
+# One-liner to generate and optionally save
+report_md = await generate_report(
+    state=final_state,
+    format="markdown",
+    output_dir=Path("./reports")
+)
+```
+
+### Report Sections
+
+All report formats include these sections:
+
+1. **Scenario Summary**: Title, seed text, context, extracted entities, initial facts
+2. **Agent Lineup**: All agents with their personas (background, traits, goals, biases, communication style)
+3. **Round Evolution**: Message counts, participants, facts extracted per round
+4. **Final Prediction**: Consensus facts, dissent points, unresolved facts with confidence scores
+5. **Divergence Analysis**: Overall consensus strength, agent alignment scores, unique contributions, dissenting positions
+
+### Custom Templates
+
+You can provide custom Jinja2 templates:
+
+```python
+from pathlib import Path
+
+custom_template_dir = Path("./my_templates")
+generator = ReportGenerator(template_dir=custom_template_dir)
+
+# Place templates named:
+# - report.markdown.j2
+# - report.json.j2
+# - report.yaml.j2
+```
+
+Template variables are available in the context; see `ReportGenerator._prepare_context()` for the full structure.
 
 ## Development Status
 

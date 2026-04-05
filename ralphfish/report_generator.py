@@ -204,6 +204,15 @@ class ReportGenerator:
             agent_msgs = [m for m in state.message_history if m.agent_id == agent.id]
             agent_messages[agent.id] = agent_msgs
 
+        # Serialize Pydantic models to dicts for JSON compatibility
+        consensus_facts_dicts = [fact.model_dump() for fact in report.consensus_facts]
+        dissent_points_dicts = [fact.model_dump() for fact in report.dissent_points]
+        unresolved_facts_dicts = [fact.model_dump() for fact in report.unresolved_facts]
+        agent_alignments_dicts = {
+            aid: alignment.model_dump()
+            for aid, alignment in report.agent_alignments.items()
+        }
+
         context = {
             # Scenario info
             "scenario": state.scenario,
@@ -233,12 +242,12 @@ class ReportGenerator:
             "total_rounds": state.round,
             "round_summaries": round_summaries,
             "message_count": len(state.message_history),
-            # Final prediction (from report)
-            "consensus_facts": report.consensus_facts,
-            "dissent_points": report.dissent_points,
-            "unresolved_facts": report.unresolved_facts,
-            # Divergence analysis
-            "agent_alignments": report.agent_alignments,
+            # Final prediction (from report) - use dict versions for JSON serialization
+            "consensus_facts": consensus_facts_dicts,
+            "dissent_points": dissent_points_dicts,
+            "unresolved_facts": unresolved_facts_dicts,
+            # Divergence analysis - use dicts
+            "agent_alignments": agent_alignments_dicts,
             "overall_consensus_strength": report.overall_consensus_strength,
             "consensus_fact_count": report.consensus_fact_count,
             "dissent_fact_count": report.dissent_fact_count,
