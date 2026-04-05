@@ -11,8 +11,14 @@ pip install -e .
 # Set your OpenRouter API key
 export OPENROUTER_API_KEY="your-key-here"
 
-# Example: Parse a seed document (see examples/parse_seed.py)
-python examples/parse_seed.py
+# Run a simulation using the CLI
+ralphfish run-simulation -s examples/scenario.txt -a 3 -r 3
+
+# Generate personas
+ralphfish generate-personas -n 5 -o personas.json
+
+# Export a report from existing simulation data
+ralphfish export-report -s output/simulation_state.json -f markdown json
 ```
 
 ## Seed Parser
@@ -52,6 +58,122 @@ The core iteration pattern is fully documented in [WIGGUM_SPECIFICATION.md](WIGG
 - **Loop Executor**: Orchestrates rounds and state persistence
 - **Synthesizer**: Aggregates final outputs into prediction reports
 - **CLI**: Command interface for running simulations
+
+## CLI Usage
+
+Ralphfish provides a command-line interface for running simulations without writing code.
+
+### Installation as CLI Tool
+
+After installing the package, the `ralphfish` command is available:
+
+```bash
+ralphfish --help
+```
+
+### Commands
+
+#### `run-simulation`
+
+Run a complete multi-agent simulation with a scenario file.
+
+**Basic usage:**
+
+```bash
+ralphfish run-simulation -s scenario.txt -a 3 -r 3
+```
+
+**Options:**
+- `-s, --scenario PATH` (required): Path to scenario text file
+- `-a, --agents N`: Number of agents to create (default: 3)
+- `-r, --rounds N`: Number of rounds to simulate (default: 3)
+- `-m, --model MODEL`: OpenRouter model to use (default: openai/gpt-3.5-turbo)
+- `-p, --protocol {discussion,debate,voting}`: Interaction protocol (default: discussion)
+- `-c, --max-concurrent N`: Maximum concurrent LLM calls (default: 1)
+- `-o, --output PATH`: Output directory for results (default: ./output)
+- `--title TEXT`: Scenario title (default: derived from filename)
+- `--context TEXT`: Additional context for the scenario
+
+**Example with all options:**
+
+```bash
+ralphfish run-simulation \
+  -s scenarios/product_launch.txt \
+  -a 5 \
+  -r 4 \
+  -m anthropic/claude-instant-1.2 \
+  -p debate \
+  -c 2 \
+  -o ./results \
+  --title "Q4 Product Launch Strategy" \
+  --context "Focus on market risks and competitive advantages"
+```
+
+#### `generate-personas`
+
+Generate agent personas and save to a JSON file.
+
+**Basic usage:**
+
+```bash
+ralphfish generate-personas -n 10 -o personas.json
+```
+
+**Options:**
+- `-n, --count N` (required): Number of personas to generate
+- `-o, --output PATH` (required): Output JSON file path
+- `-a, --archetype {scientist,engineer,artist,entrepreneur,...}`: Restrict to specific archetype
+- `--min-age N`: Minimum age (default: 18)
+- `--max-age N`: Maximum age (default: 80)
+- `--seed N`: Random seed for reproducibility
+
+**Example:**
+
+```bash
+ralphfish generate-personas -n 5 -o my_agents.json -a scientist --min-age 30 --max-age 60 --seed 42
+```
+
+#### `export-report`
+
+Export simulation reports from saved state files.
+
+**Basic usage:**
+
+```bash
+ralphfish export-report -s output/simulation_state.json
+```
+
+**Options:**
+- `-s, --state PATH` (required): Simulation state JSON file
+- `-r, --report PATH`: Pre-synthesized report JSON file (optional, will synthesize if not provided)
+- `-o, --output-dir PATH`: Output directory for reports (default: ./reports)
+- `-f, --formats {markdown,json,yaml}...`: Output format(s) (default: markdown)
+- `--summary-only`: Generate summary report only (without full transcript)
+- `--prefix TEXT`: Filename prefix for exported reports
+
+**Example:**
+
+```bash
+ralphfish export-report \
+  -s output/simulation_state.json \
+  -f markdown json \
+  -o ./final_reports \
+  --prefix "final_analysis" \
+  --summary-only
+```
+
+### Workflow Example
+
+```bash
+# 1. Generate personas
+ralphfish generate-personas -n 5 -o agents.json
+
+# 2. Run simulation with custom scenario
+ralphfish run-simulation -s my_scenario.txt -a 5 -r 3 -o ./sim1
+
+# 3. Export reports in multiple formats
+ralphfish export-report -s ./sim1/simulation_state.json -f all -o ./reports
+```
 
 ## Agent Class
 
@@ -286,13 +408,23 @@ print(markdown)
 ```python
 from pathlib import Path
 
-# Export reports (auto-generates timestamped filenames)
+# Export full reports with transcript (default)
 saved_files = generator.export(
     final_state,
     report,
     output_dir=Path("./reports"),
     filename_prefix="my_simulation",
     formats=["markdown", "json", "yaml"]  # or use ["all"]
+)
+
+# Export summary-only reports (without round-by-round transcript)
+summary_files = generator.export(
+    final_state,
+    report,
+    output_dir=Path("./reports"),
+    filename_prefix="my_simulation",
+    formats=["all"],
+    summary_only=True  # Omit detailed round evolution
 )
 
 # saved_files maps format -> Path object
@@ -340,6 +472,110 @@ generator = ReportGenerator(template_dir=custom_template_dir)
 
 Template variables are available in the context; see `ReportGenerator._prepare_context()` for the full structure.
 
+## Persona Generator
+
+The `PersonaGenerator` creates random agent personas with configurable constraints. This is useful for simulations where you need diverse, systematically generated agents.
+
+### Basic Usage
+
+```python
+from ralphfish import PersonaGenerator, PersonaGeneratorConfig, PersonaConstraints, Archetype
+
+# Get default configuration with built-in pools
+config = PersonaGeneratorConfig.get_default()
+
+# Create a generator
+generator = PersonaGenerator(config)
+
+# Generate a single persona
+persona = generator.generate()
+print(persona.name, persona.background, persona.traits)
+
+# Generate multiple personas
+personas = generator.generate_batch(5)
+```
+
+### Applying Constraints
+
+Constrain the generation to specific archetypes, demographics, or bias patterns:
+
+```python
+# Only scientists and engineers
+constraints = PersonaConstraints(
+    archetypes=[Archetype.SCIENTIST, Archetype.ENGINEER],
+    min_age=30,
+    max_age=60,
+    genders=[Gender.MALE, Gender.FEMALE],
+    nationalities=["American", "British", "Canadian"]
+)
+
+personas = generator.generate_batch(
+    count=10,
+    constraints=constraints
+)
+```
+
+### Custom Configuration
+
+Provide your own value pools for complete control:
+
+```python
+from ralphfish import PersonaGeneratorConfig
+
+custom_config = PersonaGeneratorConfig(
+    first_names=["Alice", "Bob", "Charlie"],
+    last_names=["Smith", "Jones", "Wang"],
+    archetype_backgrounds={
+        "scientist": [
+            "particle physicist at CERN",
+            "marine biologist studying coral reefs",
+            "robotics researcher"
+        ],
+    },
+    archetype_traits={
+        "scientist": ["curious", "meticulous", "skeptical"],
+    },
+    bias_patterns=["confirmation bias", "availability heuristic"],
+    communication_styles=["formal", "technical", "diplomatic"]
+)
+
+generator = PersonaGenerator(custom_config)
+```
+
+### Available Constraints
+
+`PersonaConstraints` supports:
+
+- `archetypes`: Limit to specific roles from the `Archetype` enum
+- `min_age`, `max_age`: Age range (default: 18-80)
+- `genders`: Limit to specific genders from the `Gender` enum
+- `nationalities`: List of nationality strings
+- `bias_patterns`: Specific biases to include (overrides config defaults)
+- `traits`: Additional personality traits to mix in
+- `communication_styles`: Specific communication styles (overrides config)
+- `background_categories`: Custom background themes
+
+### Reproducibility
+
+Use the `seed` parameter for deterministic generation:
+
+```python
+persona1 = generator.generate(seed=42)
+persona2 = generator.generate(seed=42)  # Same persona
+```
+
+### Integration with Agents
+
+Generated personas work seamlessly with the `Agent` class:
+
+```python
+from ralphfish import Agent, create_agents, OpenRouterClient
+
+client = OpenRouterClient()
+personas = generator.generate_batch(3, constraints)
+agents = await create_agents(personas, client)
+```
+
 ## Development Status
 
 **Phase 1**: Planning & Setup - ✅ Complete
@@ -354,11 +590,17 @@ Template variables are available in the context; see `ReportGenerator._prepare_c
 - [x] Create Wiggum loop executor
 - [x] Develop inter-agent communication layer with message passing, context window management, and memory summarization
 
-**Phase 3**: Prediction & Output Generation - 🔄 In Progress
+**Phase 3**: Prediction & Output Generation - ✅ Complete
 - [x] Build prediction synthesizer (aggregation, consensus/dissent detection, confidence scoring)
-- [ ] Implement structured report generator using Jinja2 templates
-- [ ] Add export functionality with timestamped filesystem output
-- [ ] Create configurable persona generator
+- [x] Implement structured report generator using Jinja2 templates (JSON, YAML, Markdown)
+- [x] Add export functionality with timestamped filesystem output and summary-only option
+ - [x] Create configurable persona generator
+
+**Phase 4**: Testing, Optimization & Documentation - In Progress
+- [x] Write unit tests for all core components with mocked OpenRouter responses; achieve >90% coverage for state machines and data validation
+- [x] Implement concurrent agent execution using `asyncio` to parallelize LLM calls while respecting OpenRouter rate limits (configurable max_concurrent)
+- [ ] Create CLI interface with `argparse`: commands for `run-simulation`, `generate-personas`, `export-report` with flags for agent count, rounds, model selection
+- [ ] Write comprehensive README with quickstart example, architecture diagram, persona customization guide, and troubleshooting for common OpenRouter errors
 
 ## Project Context
 

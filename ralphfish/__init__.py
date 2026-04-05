@@ -16,6 +16,14 @@ from .parser import SeedParser, parse_seed, EXTRACTION_PROMPT_TEMPLATE
 from .executor import LoopExecutor, run_simulation
 from .synthesizer import PredictionSynthesizer, SynthesisReport
 from .report_generator import ReportGenerator, generate_report
+from .persona_generator import (
+    PersonaGenerator,
+    PersonaGeneratorConfig,
+    PersonaConstraints,
+    Archetype,
+    Gender,
+    CommunicationStyle,
+)
 
 __all__ = [
     # Agent

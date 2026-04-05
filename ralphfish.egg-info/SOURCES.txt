@@ -6,6 +6,8 @@ ralphfish/client.py
 ralphfish/executor.py
 ralphfish/models.py
 ralphfish/parser.py
+ralphfish/persona_generator.py
+ralphfish/report_generator.py
 ralphfish/synthesizer.py
 ralphfish.egg-info/PKG-INFO
 ralphfish.egg-info/SOURCES.txt
@@ -13,6 +15,11 @@ ralphfish.egg-info/dependency_links.txt
 ralphfish.egg-info/entry_points.txt
 ralphfish.egg-info/requires.txt
 ralphfish.egg-info/top_level.txt
+tests/test_agent.py
 tests/test_agent_summarization.py
+tests/test_client.py
 tests/test_communication.py
+tests/test_parser.py
+tests/test_persona_generator.py
+tests/test_report_generator.py
 tests/test_synthesizer.py

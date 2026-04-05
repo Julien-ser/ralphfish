@@ -14,11 +14,11 @@
 ## Phase 3: Prediction & Output Generation
 - [x] Build prediction synthesizer: aggregate final round outputs, extract consensus/dissent patterns, compute confidence scores based on agreement metrics
 - [x] Implement structured report generator using Jinja2 templates supporting JSON, YAML, and markdown outputs with sections: scenario summary, agent lineup, round evolution, final prediction, divergence analysis
-- [ ] Add export functionality: save reports to filesystem with timestamped naming, option to dump full transcript or summary-only
-- [ ] Create configurable persona generator: random persona creation within user-defined constraints ( archetypes, demographic ranges, bias patterns)
+- [x] Add export functionality: save reports to filesystem with timestamped naming, option to dump full transcript or summary-only
+ - [x] Create configurable persona generator: random persona creation within user-defined constraints ( archetypes, demographic ranges, bias patterns)
 
 ## Phase 4: Testing, Optimization & Documentation
-- [ ] Write unit tests for all core components with mocked OpenRouter responses; achieve >90% coverage for state machines and data validation
-- [ ] Implement concurrent agent execution using `asyncio` to parallelize LLM calls while respecting OpenRouter rate limits (configurable max_concurrent)
-- [ ] Create CLI interface with `argparse`: commands for `run-simulation`, `generate-personas`, `export-report` with flags for agent count, rounds, model selection
-- [ ] Write comprehensive README with quickstart example, architecture diagram, persona customization guide, and troubleshooting for common OpenRouter errors
+- [x] Write unit tests for all core components with mocked OpenRouter responses; achieve >90% coverage for state machines and data validation
+- [x] Implement concurrent agent execution using `asyncio` to parallelize LLM calls while respecting OpenRouter rate limits (configurable max_concurrent)
+- [x] Create CLI interface with `argparse`: commands for `run-simulation`, `generate-personas`, `export-report` with flags for agent count, rounds, model selection
+- [x] Write comprehensive README with quickstart example, architecture diagram, persona customization guide, and troubleshooting for common OpenRouter errors

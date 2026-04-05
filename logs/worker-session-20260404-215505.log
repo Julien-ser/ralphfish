@@ -3033,3 +3033,112 @@ Perfect! All tests pass. Now I need to:
 2. Commit all changes and push to GitHub
 
 Let's update TASKS.md:
+Now commit all changes:
+[0m$ [0mgit add . && git commit -m "feat: complete structured report generator with comprehensive tests and documentation"
+[wiggum/session 4da72a3] feat: complete structured report generator with comprehensive tests and documentation
+ 10 files changed, 2813 insertions(+), 8 deletions(-)
+ create mode 100644 logs/iteration-12.md
+ create mode 100644 tests/__pycache__/test_report_generator.cpython-314-pytest-7.4.3.pyc
+ create mode 100644 tests/test_report_generator.py
+[0m
+Now push to GitHub:
+[0m$ [0mgit push origin main
+Everything up-to-date
+[0m
+Let's check the current git status:
+[0m$ [0mgit status
+On branch wiggum/session
+Your branch is ahead of 'origin/main' by 16 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   logs/iteration-12.md
+	modified:   logs/worker-session-20260404-215505.log
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
+We're on `wiggum/session` branch. Let's push to `origin/main` as instructed:
+[0m$ [0mgit push origin HEAD:main
+To https://github.com/Julien-ser/ralphfish.git
+   fc59e27..4da72a3  HEAD -> main
+[0m
+✅ **Task completed**: Structured report generator with Jinja2 templates is fully implemented.
+
+**Deliverables:**
+- `ReportGenerator` class generates reports in JSON, YAML, and Markdown
+- Includes all required sections: scenario summary, agent lineup, round evolution, final prediction, divergence analysis
+- Export functionality with timestamped filesystem output
+- Comprehensive test suite (14 tests, all passing)
+- Updated exports in `__init__.py`
+- Full documentation added to README
+- Bug fix: Serialized Pydantic models for JSON compatibility
+
+**Tests:** 45/45 passing.
+📝 Log saved: logs/iteration-12.md
+📊 Token Usage: 18750 / Session: 64750 / 64000
+⚠️  Token budget exhausted this session (64750 / 64000)
+🔄 AUTO-RESTARTING WORKER SESSION...
+🔍 AGENTS.md not found. Running opencode /init...
+
+[0m▄[0m
+[90m█[0m[90m▀[0m[90m▀[0m[90m█[0m [90m█[0m[90m▀[0m[90m▀[0m[90m█[0m [90m█[0m[90m▀[0m[90m▀[0m[90m█[0m [90m█[0m[90m▀[0m[90m▀[0m[90m▄[0m [0m█[0m[0m▀[0m[0m▀[0m[0m▀[0m [0m█[0m[0m▀[0m[0m▀[0m[0m█[0m [0m█[0m[0m▀[0m[0m▀[0m[0m█[0m [0m█[0m[0m▀[0m[0m▀[0m[0m█[0m
+[90m█[0m[48;5;235m [0m[48;5;235m [0m[90m█[0m [90m█[0m[48;5;235m [0m[48;5;235m [0m[90m█[0m [90m█[0m[90m[48;5;235m▀[0m[90m[48;5;235m▀[0m[90m[48;5;235m▀[0m [90m█[0m[48;5;235m [0m[48;5;235m [0m[90m█[0m [0m█[0m[48;5;238m [0m[48;5;238m [0m[48;5;238m [0m [0m█[0m[48;5;238m [0m[48;5;238m [0m[0m█[0m [0m█[0m[48;5;238m [0m[48;5;238m [0m[0m█[0m [0m█[0m[0m[48;5;238m▀[0m[0m[48;5;238m▀[0m[0m[48;5;238m▀[0m
+[90m▀[0m[90m▀[0m[90m▀[0m[90m▀[0m [90m█[0m[90m▀[0m[90m▀[0m[90m▀[0m [90m▀[0m[90m▀[0m[90m▀[0m[90m▀[0m [90m▀[0m[38;5;235m▀[0m[38;5;235m▀[0m[90m▀[0m [0m▀[0m[0m▀[0m[0m▀[0m[0m▀[0m [0m▀[0m[0m▀[0m[0m▀[0m[0m▀[0m [0m▀[0m[0m▀[0m[0m▀[0m[0m▀[0m [0m▀[0m[0m▀[0m[0m▀[0m[0m▀[0m
+
+Commands:
+  opencode completion          generate shell completion script
+  opencode acp                 start ACP (Agent Client Protocol) server
+  opencode mcp                 manage MCP (Model Context Protocol) servers
+  opencode [project]           start opencode tui                                          [default]
+  opencode attach <url>        attach to a running opencode server
+  opencode run [message..]     run opencode with a message
+  opencode debug               debugging and troubleshooting tools
+  opencode auth                manage credentials
+  opencode agent               manage agents
+  opencode upgrade [target]    upgrade opencode to the latest or a specific version
+  opencode uninstall           uninstall opencode and remove all related files
+  opencode serve               starts a headless opencode server
+  opencode web                 start opencode server and open web interface
+  opencode models [provider]   list all available models
+  opencode stats               show token usage and cost statistics
+  opencode export [sessionID]  export session data as JSON
+  opencode import <file>       import session data from JSON file or URL
+  opencode github              manage GitHub agent
+  opencode pr <number>         fetch and checkout a GitHub PR branch, then run opencode
+  opencode session             manage sessions
+  opencode db                  database tools
+
+Positionals:
+  project  path to start opencode in                                                        [string]
+
+Options:
+  -h, --help         show help                                                             [boolean]
+  -v, --version      show version number                                                   [boolean]
+      --print-logs   print logs to stderr                                                  [boolean]
+      --log-level    log level                  [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --port         port to listen on                                         [number] [default: 0]
+      --hostname     hostname to listen on                           [string] [default: "127.0.0.1"]
+      --mdns         enable mDNS service discovery (defaults hostname to 0.0.0.0)
+                                                                          [boolean] [default: false]
+      --mdns-domain  custom domain name for mDNS service (default: opencode.local)
+                                                                [string] [default: "opencode.local"]
+      --cors         additional domains to allow for CORS                      [array] [default: []]
+  -m, --model        model to use in the format of provider/model                           [string]
+  -c, --continue     continue the last session                                             [boolean]
+  -s, --session      session id to continue                                                 [string]
+      --fork         fork the session when continuing (use with --continue or --session)   [boolean]
+      --prompt       prompt to use                                                          [string]
+      --agent        agent to use                                                           [string]
+⚠️  Could not generate AGENTS.md
+🔧 Git repository already exists. Verifying remote setup...
+✅ Repository already exists on GitHub: Julien-ser/ralphfish
+🔒 Setting branch protection to allow auto-merge on main...
+{"message":"Invalid request.\n\nNo subschema in \"anyOf\" matched.\nNo subschema in \"anyOf\" matched.\nNo subschema in \"anyOf\" matched.\n\"restrictions\" wasn't supplied.\nFor 'allOf/0', \"[]\" is not an object.\nNot all subschemas of \"allOf\" matched.\nFor 'anyOf/1', \"[]\" is not a null.\nFor 'allOf/0', \"null\" is not an object.\nNot all subschemas of \"allOf\" matched.\nFor 'anyOf/1', \"null\" is not a null.\nFor 'allOf/0', \"false\" is not a boolean.\nNot all subschemas of \"allOf\" matched.\nFor 'anyOf/1', \"false\" is not a null.","documentation_url":"https://docs.github.com/rest/branches/branch-protection#update-branch-protection","status":"422"}⚠️  Could not set branch protection (may already exist or insufficient permissions)
+fatal: a branch named 'main' already exists
+Already on 'wiggum/session'
+M	logs/iteration-12.md
+M	logs/worker-session-20260404-215505.log
+Your branch is up to date with 'origin/main'.
+🔀 Using existing session branch: wiggum/session

@@ -398,3 +398,119 @@ def test_yaml_template_readability(simulation_state, synthesis_report):
     assert data["scenario"]["title"] == "Test Report Scenario"
     assert len(data["agents"]) == 2
     assert data["simulation"]["total_rounds"] == 2
+
+
+def test_generate_summary_only_markdown(simulation_state, synthesis_report):
+    """Test generating a summary-only markdown report."""
+    generator = ReportGenerator()
+    report = generator.generate(
+        simulation_state, synthesis_report, format="markdown", summary_only=True
+    )
+
+    assert isinstance(report, str)
+    assert "SUMMARY ONLY" in report or "summary" in report.lower()
+    assert "Round Evolution" not in report
+    assert "Agent Lineup" in report
+    assert "Final Prediction" in report
+    assert "Divergence Analysis" in report
+
+
+def test_generate_summary_only_json(simulation_state, synthesis_report):
+    """Test generating a summary-only JSON report."""
+    generator = ReportGenerator()
+    report = generator.generate(
+        simulation_state, synthesis_report, format="json", summary_only=True
+    )
+
+    import json
+
+    data = json.loads(report)
+    assert "simulation" in data
+    # In summary mode, round_summaries should be omitted or empty
+    assert (
+        "round_summaries" not in data["simulation"]
+        or data["simulation"].get("round_summaries") == []
+    )
+    assert data["metadata"]["summary_only"] is True
+    # Essential sections should still be present
+    assert "scenario" in data
+    assert "agents" in data
+    assert "synthesis" in data
+
+
+def test_generate_summary_only_yaml(simulation_state, synthesis_report):
+    """Test generating a summary-only YAML report."""
+    generator = ReportGenerator()
+    report = generator.generate(
+        simulation_state, synthesis_report, format="yaml", summary_only=True
+    )
+
+    import yaml
+
+    data = yaml.safe_load(report)
+    assert "simulation" in data
+    # In summary mode, total_messages and round_summaries should be omitted
+    assert "total_messages" not in data["simulation"]
+    assert "round_summaries" not in data["simulation"]
+    assert data["metadata"]["summary_only"] is True
+    # Essential sections should still be present
+    assert "scenario" in data
+    assert "agents" in data
+    assert "synthesis" in data
+
+
+def test_export_summary_only(simulation_state, synthesis_report, tmp_path):
+    """Test exporting summary-only reports."""
+    generator = ReportGenerator()
+    saved_files = generator.export(
+        simulation_state,
+        synthesis_report,
+        output_dir=tmp_path,
+        filename_prefix="summary_test",
+        formats=["markdown", "json"],
+        summary_only=True,
+    )
+
+    assert len(saved_files) == 2
+    for fmt, filepath in saved_files.items():
+        assert filepath.exists()
+        content = filepath.read_text()
+        assert "summary" in content.lower() or "SUMMARY ONLY" in content
+        if fmt == "json":
+            import json
+
+            data = json.loads(content)
+            assert data["metadata"]["summary_only"] is True
+        # Filename should include summary suffix
+        assert "summary_test_summary_" in filepath.name
+
+
+def test_export_all_formats_summary_only(simulation_state, synthesis_report, tmp_path):
+    """Test exporting all formats in summary mode."""
+    generator = ReportGenerator()
+    saved_files = generator.export(
+        simulation_state,
+        synthesis_report,
+        output_dir=tmp_path,
+        formats=["all"],
+        summary_only=True,
+    )
+
+    assert len(saved_files) == 3
+    for fmt in ["markdown", "json", "yaml"]:
+        assert fmt in saved_files
+        filepath = saved_files[fmt]
+        content = filepath.read_text()
+        # Verify summary-only content
+        if fmt == "markdown":
+            assert "Round Evolution" not in content or "SUMMARY ONLY" in content
+        elif fmt == "json":
+            import json
+
+            data = json.loads(content)
+            assert data["metadata"]["summary_only"] is True
+        elif fmt == "yaml":
+            import yaml
+
+            data = yaml.safe_load(content)
+            assert data["metadata"]["summary_only"] is True
