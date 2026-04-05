@@ -179,6 +179,7 @@ class LoopExecutor:
                 raise
             # Process responses in order
             for agent, response in zip(batch, results):
+                agent.add_message(response)
                 self.state.message_history.append(response)
                 self._broadcast(response, exclude=agent)
                 logger.debug(
