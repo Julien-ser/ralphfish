@@ -3,7 +3,7 @@
 ## Phase 1: Planning & Setup
 - [x] Define the Wiggum loop specification: document the exact iteration pattern (agent reasoning → interaction → state update → aggregation) with pseudocode and state transition rules
 - [x] Set up Python project with `pyproject.toml`, including dependencies: `openai` (OpenRouter SDK), `pydantic` (data validation), `jinja2` (templating), `python-dotenv` (config)
-- [ ] Create OpenRouter API client wrapper with free-tier model routing, request/response logging, and exponential backoff retry logic
+- [x] Create OpenRouter API client wrapper with free-tier model routing, request/response logging, and exponential backoff retry logic
 - [ ] Design the base data models: `AgentPersona` (name, background, traits, goals), `SimulationState` (round, agents, world facts), `Scenario` (seed text, extracted entities)
 
 ## Phase 2: Core Engine Development

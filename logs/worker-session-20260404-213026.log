@@ -189,3 +189,34 @@ Task 1 complete. Moving to task 2: Set up Python project with pyproject.toml.
 [0m← [0mWrite pyproject.toml
 Wrote file successfully.
 [0m
+Now marking task 2 as complete and committing:
+[0m← [0mEdit TASKS.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/ralphfish/TASKS.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/ralphfish/TASKS.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/ralphfish/TASKS.md
+@@ -1,9 +1,9 @@
+ # ralphfish
+ 
+ ## Phase 1: Planning & Setup
+ - [x] Define the Wiggum loop specification: document the exact iteration pattern (agent reasoning → interaction → state update → aggregation) with pseudocode and state transition rules
+-- [ ] Set up Python project with `pyproject.toml`, including dependencies: `openai` (OpenRouter SDK), `pydantic` (data validation), `jinja2` (templating), `python-dotenv` (config)
++- [x] Set up Python project with `pyproject.toml`, including dependencies: `openai` (OpenRouter SDK), `pydantic` (data validation), `jinja2` (templating), `python-dotenv` (config)
+ - [ ] Create OpenRouter API client wrapper with free-tier model routing, request/response logging, and exponential backoff retry logic
+ - [ ] Design the base data models: `AgentPersona` (name, background, traits, goals), `SimulationState` (round, agents, world facts), `Scenario` (seed text, extracted entities)
+ 
+ ## Phase 2: Core Engine Development
+
+[0m
+[0m$ [0mgit add . && git commit -m "feat: setup Python project with pyproject.toml" && git push origin main
+[wiggum/session e0e597c] feat: setup Python project with pyproject.toml
+ 4 files changed, 88 insertions(+), 1 deletion(-)
+ create mode 100644 pyproject.toml
+Everything up-to-date
+[0m
+Task 2 complete. Moving to task 3: Create OpenRouter API client wrapper. I'll set up the package structure and implement the client.
+[0m$ [0mmkdir -p ralphfish && touch ralphfish/__init__.py
+[0m
+[0m← [0mWrite ralphfish/client.py
+Wrote file successfully.
+[0m
