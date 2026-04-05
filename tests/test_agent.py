@@ -120,8 +120,11 @@ class TestAgentInitialization:
 
         agent = Agent(persona=persona, client=mock_client)
 
-        # Should have debug log about initialization
-        assert any(agent.persona.id in record.message for record in caplog.records)
+        # Should have debug log with agent_id in extra fields (structured logging)
+        assert any(
+            getattr(record, "agent_id", None) == agent.persona.id
+            for record in caplog.records
+        )
 
 
 class TestSystemPromptRendering:
@@ -717,5 +720,7 @@ class TestCreateAgentsHelper:
 
         await create_agents(personas, mock_client)
 
+        # Check for "Created agents" in message
         assert any("Created agents" in record.message for record in caplog.records)
-        assert any("count" in record.message for record in caplog.records)
+        # Check count is in extra fields (structured logging)
+        assert any(getattr(record, "count", None) == 2 for record in caplog.records)
