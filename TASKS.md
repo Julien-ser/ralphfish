@@ -8,7 +8,7 @@
 
 ## Phase 2: Core Engine Development
 - [x] Build seed document parser using LLM extraction: parse user input to identify key entities, relationships, conflicts, and initial conditions (output: structured JSON)
-- [ ] Implement `Agent` class with persona template rendering, message history management, and per-agent LLM call isolation
+- [x] Implement `Agent` class with persona template rendering, message history management, and per-agent LLM call isolation
 - [ ] Create Wiggum loop executor: orchestrate N agents for M rounds, managing turn order, interaction protocols (discuss/debate/vote), and state persistence between rounds
 - [ ] Develop inter-agent communication layer: message passing with role labels, context window management, and optional memory summarization
 

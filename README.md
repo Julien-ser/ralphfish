@@ -53,6 +53,76 @@ The core iteration pattern is fully documented in [WIGGUM_SPECIFICATION.md](WIGG
 - **Synthesizer**: Aggregates final outputs into prediction reports
 - **CLI**: Command interface for running simulations
 
+## Agent Class
+
+The `Agent` class is the core building block for creating autonomous agents:
+
+```python
+from ralphfish import Agent, AgentPersona, OpenRouterClient, AgentConfig
+
+# Create a persona
+persona = AgentPersona(
+    id="analyst_001",
+    name="Alice",
+    background="Data scientist with expertise in statistics",
+    traits=["analytical", "cautious", "thorough"],
+    goals=["Provide accurate predictions", "Identify data inconsistencies"],
+    biases=["Prefers quantitative evidence"],
+    communication_style="formal"
+)
+
+# Create OpenRouter client
+client = OpenRouterClient()
+
+# Configure agent-specific settings (optional)
+config = AgentConfig(
+    model="anthropic/claude-instant-1.2",
+    temperature=0.5,
+    use_free_tier=True
+)
+
+# Create the agent
+agent = Agent(
+    persona=persona,
+    client=client,
+    config=config,
+    max_history_length=100
+)
+
+# Generate a response (async)
+response = await agent.generate_response(
+    additional_context="Scenario context here...",
+    round_num=1
+)
+
+print(response.content)  # Agent's response
+print(agent.get_stats())  # Agent statistics
+```
+
+### Agent Features
+
+- **Isolated State**: Each agent maintains its own message history
+- **Per-Agent Configuration**: Custom model, temperature, and other LLM parameters
+- **Persona Template Rendering**: Supports Jinja2 or simple .format() templates
+- **History Management**: Automatic trimming to respect context window limits
+- **Async Support**: Fully async for concurrent execution
+
+### Creating Multiple Agents
+
+```python
+from ralphfish import create_agents
+
+# Prepare personas list
+personas = [...]  # List of AgentPersona objects
+
+# Create all agents with shared client
+agents = await create_agents(
+    personas=personas,
+    client=client,
+    max_history_length=50
+)
+```
+
 ## Development Status
 
 **Phase 1**: Planning & Setup - ✅ Complete
@@ -63,7 +133,7 @@ The core iteration pattern is fully documented in [WIGGUM_SPECIFICATION.md](WIGG
 
 **Phase 2**: Core Engine Development - In Progress
 - [x] Build seed document parser using LLM extraction
-- [ ] Implement `Agent` class with persona template rendering
+- [x] Implement `Agent` class with persona template rendering
 - [ ] Create Wiggum loop executor
 - [ ] Develop inter-agent communication layer
 
