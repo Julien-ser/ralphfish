@@ -13,6 +13,7 @@ from .models import (
     DEFAULT_PERSONA_TEMPLATE,
 )
 from .parser import SeedParser, parse_seed, EXTRACTION_PROMPT_TEMPLATE
+from .executor import LoopExecutor, run_simulation
 
 __all__ = [
     # Agent
@@ -37,6 +38,9 @@ __all__ = [
     "SeedParser",
     "parse_seed",
     "EXTRACTION_PROMPT_TEMPLATE",
+    # Executor
+    "LoopExecutor",
+    "run_simulation",
 ]
 
 __version__ = "0.1.0"

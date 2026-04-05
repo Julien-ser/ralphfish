@@ -1,0 +1,2 @@
+[console_scripts]
+ralphfish = ralphfish.cli:main

@@ -35,6 +35,25 @@ class AgentConfig(BaseModel):
     use_free_tier: bool = Field(
         default=False, description="Force use of free-tier models"
     )
+    # Memory summarization settings
+    enable_summarization: bool = Field(
+        default=False, description="Enable automatic message history summarization"
+    )
+    summarize_threshold: int = Field(
+        default=30,
+        ge=1,
+        description="Number of messages before triggering summarization",
+    )
+    summary_message_limit: int = Field(
+        default=5,
+        ge=1,
+        description="Number of old messages to summarize into one",
+    )
+    summarization_interval: int = Field(
+        default=0,
+        ge=0,
+        description="Summarize every N rounds (0 to disable, 1 = every round)",
+    )
 
 
 class Agent:
@@ -74,6 +93,8 @@ class Agent:
         self.message_history: List[Message] = []
         self.round_messages: List[Message] = []  # Messages from current round only
         self.total_messages_generated: int = 0
+        self.summary_count: int = 0  # Number of summaries generated
+        self.last_summarization_round: Optional[int] = None
 
         logger.debug(
             "Agent initialized",
@@ -299,11 +320,163 @@ class Agent:
         self.message_history = []
         self.round_messages = []
         self.total_messages_generated = 0
+        self.summary_count = 0
+        self.last_summarization_round = None
         logger.debug("Cleared agent history", extra={"agent_id": self.persona.id})
+
+    def _should_summarize(self, current_round: int) -> bool:
+        """
+        Determine if message history should be summarized.
+
+        Returns True if:
+        - Summarization is enabled
+        - History length exceeds summarize_threshold
+        - OR if it's time for periodic summarization (every N rounds)
+        """
+        if not self.config.enable_summarization:
+            return False
+
+        # Periodic summarization based on rounds
+        if (
+            self.config.summarization_interval > 0
+            and current_round > 0
+            and current_round % self.config.summarization_interval == 0
+            and self.last_summarization_round != current_round
+        ):
+            return True
+
+        # Threshold-based summarization
+        if len(self.message_history) >= self.config.summarize_threshold:
+            return True
+
+        return False
+
+    async def _generate_summary(self, messages: List[Message]) -> str:
+        """
+        Generate a concise summary of the provided messages using the LLM.
+
+        Args:
+            messages: List of Message objects to summarize
+
+        Returns:
+            Summary text capturing key points
+        """
+        if not messages:
+            return ""
+
+        # Build context for summarization
+        conversation_text = "\n".join(
+            f"[Round {msg.round}] {msg.agent_name}: {msg.content[:200]}..."
+            for msg in messages[:20]  # Limit to avoid excessive tokens
+        )
+
+        summary_prompt = f"""Summarize the following conversation concisely, preserving key facts, decisions, and disagreements:
+
+{conversation_text}
+
+Provide a brief summary (2-3 sentences) focusing on:
+- Key information revealed
+- Important decisions or positions
+- Notable disagreements or conflicts"""
+
+        try:
+            response = await self.client.chat_completion(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a concise summarizer. Extract only the most important points.",
+                    },
+                    {"role": "user", "content": summary_prompt},
+                ],
+                model=self.config.model,
+                temperature=0.3,  # Lower temperature for consistent summaries
+                max_tokens=150,
+                use_free_tier=self.config.use_free_tier,
+            )
+            return response["content"].strip()
+        except Exception as e:
+            logger.error(
+                "Failed to generate summary",
+                extra={"agent_id": self.persona.id, "error": str(e)},
+            )
+            # Fallback: simple concatenation
+            return f"Summary of {len(messages)} messages from rounds {min(m.round for m in messages)}-{max(m.round for m in messages)}"
+
+    async def summarize_old_messages(self, current_round: int) -> Optional[Message]:
+        """
+        Summarize old messages to manage context window.
+
+        Removes the oldest N messages and replaces them with a single summary message.
+        The summary is added to the message history with a special metadata flag.
+
+        Args:
+            current_round: Current round number for the summary message
+
+        Returns:
+            The summary message if summarization occurred, None otherwise
+        """
+        if not self._should_summarize(current_round):
+            return None
+
+        # Determine how many messages to summarize
+        n = min(self.config.summary_message_limit, len(self.message_history) // 2)
+        if n < 1:
+            return None
+
+        # Get oldest messages to summarize (but keep at least one message before current round)
+        messages_to_summarize = self.message_history[:n]
+        if len(self.message_history) - n < 1:
+            logger.debug(
+                "Not enough messages to summarize safely",
+                extra={"agent_id": self.persona.id},
+            )
+            return None
+
+        # Generate summary
+        summary_text = await self._generate_summary(messages_to_summarize)
+
+        # Create summary message
+        summary_msg = Message(
+            round=current_round,
+            agent_id=self.persona.id,
+            agent_name=self.persona.name,
+            thought="Memory summarization",
+            content=f"[SUMMARY of earlier conversation]\n{summary_text}",
+            metadata={
+                "is_summary": True,
+                "summarized_count": n,
+                "summarized_rounds": list(set(m.round for m in messages_to_summarize)),
+            },
+        )
+
+        # Remove old messages and insert summary at the beginning of history
+        # (or at the position after keeping the most recent half)
+        keep_start = n
+        new_history = self.message_history[keep_start:]
+        new_history.insert(0, summary_msg)  # Insert at beginning to preserve order
+        self.message_history = new_history
+
+        # Also update round_messages if needed (usually cleared between rounds)
+        # We keep round_messages as-is for the current round
+
+        self.summary_count += 1
+        self.last_summarization_round = current_round
+
+        logger.info(
+            "Summarized message history",
+            extra={
+                "agent_id": self.persona.id,
+                "summarized_count": n,
+                "new_history_length": len(self.message_history),
+                "total_summaries": self.summary_count,
+            },
+        )
+
+        return summary_msg
 
     def get_stats(self) -> Dict[str, Any]:
         """Get statistics for this agent."""
-        return {
+        stats = {
             "agent_id": self.persona.id,
             "agent_name": self.persona.name,
             "total_messages_generated": self.total_messages_generated,
@@ -311,6 +484,30 @@ class Agent:
             "model": self.config.model,
             "temperature": self.config.temperature,
         }
+        if self.config.enable_summarization:
+            stats.update(
+                {
+                    "summarization_enabled": True,
+                    "summary_count": self.summary_count,
+                    "last_summarization_round": self.last_summarization_round,
+                }
+            )
+        return stats
+
+    async def maybe_summarize(self, current_round: int) -> Optional[Message]:
+        """
+        Check if summarization is needed and perform it if so.
+
+        This method should be called by the executor at appropriate times
+        (e.g., after all agents have taken their turn in a round).
+
+        Args:
+            current_round: The current round number
+
+        Returns:
+            Summary message if summarization occurred, None otherwise
+        """
+        return await self.summarize_old_messages(current_round)
 
 
 # Convenience function to create agents from persona list
