@@ -128,7 +128,7 @@ class Scenario(BaseModel):
     seed_text: str
     title: Optional[str] = None
     context: Optional[str] = None
-    extracted_entities: Dict[str, Any] = Field(default_factory=dict)
+    extracted_entities: List[Dict[str, Any]] = Field(default_factory=list)
     extracted_relationships: List[Dict[str, Any]] = Field(default_factory=list)
     initial_facts: List[Fact] = Field(default_factory=list)
 

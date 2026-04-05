@@ -35,7 +35,7 @@ Analyze the following scenario text and extract key information in JSON format.
 ## Instructions
 Extract and return a JSON object with these keys:
 - "entities": list of key entities (name, type, description)
-- "relationships": list of relationships between entities {subject: "A", predicate: "works_for", object: "B"}
+- "relationships": list of relationships between entities (subject: "A", predicate: "works_for", object: "B")
 - "conflicts": list of conflicts or problems identified
 - "initial_facts": list of factual statements from the text
 - "assumptions": list of implicit assumptions that can be made
