@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional, Union
 from enum import Enum
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, field_serializer
 
 
 class InteractionProtocol(str, Enum):
@@ -31,10 +31,9 @@ class Message(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-    class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat(),
-        }
+    @field_serializer("timestamp")
+    def serialize_timestamp(self, v: datetime) -> str:
+        return v.isoformat()
 
 
 class Fact(BaseModel):
