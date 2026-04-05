@@ -320,3 +320,18 @@ The CLI supports:
 To https://github.com/Julien-ser/ralphfish.git
    f54f504..0b3741b  wiggum/session -> wiggum/session
 ✅ Pushed to GitHub (branch: wiggum/session)
+📊 Updated Tasks: 14/14 completed, 0 remaining
+✅ All tasks completed! Creating PR...
+[wiggum/session cc5703b] Final worker session push
+ 1 file changed, 4 insertions(+)
+To https://github.com/Julien-ser/ralphfish.git
+   0b3741b..cc5703b  wiggum/session -> wiggum/session
+✅ Final push to GitHub successful (branch: wiggum/session)
+⚠️  Could not create pull request
+📍 Iteration 38 at Sun Apr  5 11:36:00 AM EDT 2026...
+🔍 [DEBUG] No uncompleted tasks found. Checking task counts...
+   Completed: 14, Uncompleted: 0, Total: 14
+wiggum_worker.sh: line 637: task_attempts: bad array subscript
+wiggum_worker.sh: line 638: task_attempts["$next_task"]: bad array subscript
+✅ Worker finished
+❌ Worker interrupted
